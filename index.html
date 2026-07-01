@@ -124,15 +124,9 @@
     font-weight: bold;
     box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     z-index: 2;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-  }
-  #fortuneLink.show {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transition: opacity 0.4s ease;
   }
   #analyzingMessage {
     display: none;
@@ -205,6 +199,7 @@
     heading.style.visibility = 'hidden';
     lottoBtn.style.visibility = 'hidden';
     luckyMessage.style.visibility = 'hidden';
+    fortuneLink.style.visibility = 'hidden';
     analyzingMessage.style.display = 'flex';
 
     setTimeout(() => {
@@ -212,6 +207,7 @@
       heading.style.visibility = 'visible';
       lottoBtn.style.visibility = 'visible';
       luckyMessage.style.visibility = 'visible';
+      fortuneLink.style.visibility = 'visible';
 
       for (let i = 0; i < 5; i++) {
         const row = document.createElement('div');
@@ -227,10 +223,7 @@
 
         setTimeout(() => {
           row.classList.add('show');
-          if (i === 4) {
-            lottoBtn.disabled = false;
-            fortuneLink.classList.add('show');
-          }
+          if (i === 4) lottoBtn.disabled = false;
         }, i * 500);
       }
     }, 2000);
