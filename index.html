@@ -111,6 +111,13 @@
     font-weight: bold;
     color: #ffd966;
   }
+  #analyzingMessage {
+    display: none;
+    margin: 8px 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #69c8f2;
+  }
 </style>
 </head>
 <body>
@@ -118,12 +125,14 @@
 <div class="stars" id="stars"></div>
 <h1>행운의 로또번호 연구실</h1>
 <button id="lottoBtn">랜덤 로또번호 생성</button>
+<div id="analyzingMessage">연구실에서 10년간 로또 1등 당첨번호를 분석중..</div>
 <div id="lottoResult"></div>
 <div id="luckyMessage">행운을 빕니다!</div>
 
 <script>
   const lottoBtn = document.getElementById('lottoBtn');
   const lottoResult = document.getElementById('lottoResult');
+  const analyzingMessage = document.getElementById('analyzingMessage');
   const starsContainer = document.getElementById('stars');
 
   for (let i = 0; i < 120; i++) {
@@ -157,24 +166,29 @@
   lottoBtn.addEventListener('click', () => {
     lottoResult.innerHTML = '';
     lottoBtn.disabled = true;
+    analyzingMessage.style.display = 'block';
 
-    for (let i = 0; i < 5; i++) {
-      const row = document.createElement('div');
-      row.className = 'lottoRow';
-      generateLottoNumbers().forEach(n => {
-        const ball = document.createElement('div');
-        ball.className = 'ball';
-        ball.textContent = n;
-        ball.style.backgroundColor = ballColor(n);
-        row.appendChild(ball);
-      });
-      lottoResult.appendChild(row);
+    setTimeout(() => {
+      analyzingMessage.style.display = 'none';
 
-      setTimeout(() => {
-        row.classList.add('show');
-        if (i === 4) lottoBtn.disabled = false;
-      }, i * 500);
-    }
+      for (let i = 0; i < 5; i++) {
+        const row = document.createElement('div');
+        row.className = 'lottoRow';
+        generateLottoNumbers().forEach(n => {
+          const ball = document.createElement('div');
+          ball.className = 'ball';
+          ball.textContent = n;
+          ball.style.backgroundColor = ballColor(n);
+          row.appendChild(ball);
+        });
+        lottoResult.appendChild(row);
+
+        setTimeout(() => {
+          row.classList.add('show');
+          if (i === 4) lottoBtn.disabled = false;
+        }, i * 500);
+      }
+    }, 2000);
   });
 </script>
 </body>
