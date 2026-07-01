@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>오늘의 운세 - 행운의 로또번호 연구실</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    position: relative;
+    background-color: #050510;
+    color: #e0e0e0;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    overflow-x: hidden;
+    padding: 40px 16px;
+    box-sizing: border-box;
+  }
+  .aurora {
+    position: fixed;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    z-index: -2;
+    background: radial-gradient(circle at 20% 30%, rgba(0,255,170,0.35), transparent 45%),
+                radial-gradient(circle at 70% 20%, rgba(120,80,255,0.35), transparent 45%),
+                radial-gradient(circle at 50% 70%, rgba(0,180,255,0.3), transparent 50%),
+                radial-gradient(circle at 85% 80%, rgba(255,0,200,0.25), transparent 45%);
+    filter: blur(40px);
+    animation: auroraMove 18s ease-in-out infinite alternate;
+  }
+  @keyframes auroraMove {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    50%  { transform: translate(5%, 3%) rotate(8deg); }
+    100% { transform: translate(-4%, -3%) rotate(-6deg); }
+  }
+  .stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+  #backLink {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    z-index: 2;
+  }
+  #backLink:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  h1 {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #aaaaaa;
+    margin-bottom: 28px;
+    font-size: 15px;
+  }
+  #formArea {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 300px;
+  }
+  #formArea input,
+  #formArea select {
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.06);
+    color: #e0e0e0;
+  }
+  #formArea input::placeholder {
+    color: #888;
+  }
+  #fortuneBtn {
+    margin-top: 8px;
+    padding: 16px 32px;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #ffb347, #ffd966);
+    color: #1a1a1a;
+    font-weight: bold;
+  }
+  #fortuneBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  #retryBtn {
+    margin-top: 28px;
+    padding: 12px 26px;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: transparent;
+    color: #e0e0e0;
+  }
+  #retryBtn:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  #errorMessage {
+    display: none;
+    color: #ff7272;
+    font-size: 14px;
+    margin-top: -4px;
+  }
+  #analyzingMessage {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 0 40px;
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffd966;
+    text-align: center;
+    z-index: 3;
+    background: rgba(5,5,16,0.4);
+  }
+  #fortuneResult {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .fortuneCard {
+    opacity: 0;
+    transform: scale(0.3);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 16px 20px;
+    text-align: left;
+  }
+  .fortuneCard.show {
+    animation: popIn 0.45s cubic-bezier(.34, 1.56, .64, 1) forwards;
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.3); }
+    60%  { opacity: 1; transform: scale(1.15); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .fortuneCard .label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffd966;
+    margin-bottom: 6px;
+  }
+  .fortuneCard .value {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .luckyRow {
+    display: flex;
+    gap: 12px;
+  }
+  .luckyRow .fortuneCard {
+    flex: 1;
+  }
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="stars" id="stars"></div>
+<a id="backLink" href="index.html">← 로또 번호 생성으로</a>
+<h1>오늘의 운세</h1>
+<div class="subtitle">이름과 생년월일, 태어난 시간을 입력하면 오늘의 운세를 알려드려요</div>
+
+<div id="formArea">
+  <input id="nameInput" type="text" placeholder="이름">
+  <input id="birthInput" type="date">
+  <select id="hourInput">
+    <option value="모름">태어난 시간 (모름)</option>
+    <option value="자시(23~01시)">자시 (23~01시)</option>
+    <option value="축시(01~03시)">축시 (01~03시)</option>
+    <option value="인시(03~05시)">인시 (03~05시)</option>
+    <option value="묘시(05~07시)">묘시 (05~07시)</option>
+    <option value="진시(07~09시)">진시 (07~09시)</option>
+    <option value="사시(09~11시)">사시 (09~11시)</option>
+    <option value="오시(11~13시)">오시 (11~13시)</option>
+    <option value="미시(13~15시)">미시 (13~15시)</option>
+    <option value="신시(15~17시)">신시 (15~17시)</option>
+    <option value="유시(17~19시)">유시 (17~19시)</option>
+    <option value="술시(19~21시)">술시 (19~21시)</option>
+    <option value="해시(21~23시)">해시 (21~23시)</option>
+  </select>
+  <div id="errorMessage">이름과 생년월일을 입력해 주세요.</div>
+  <button id="fortuneBtn">운세 보기</button>
+</div>
+
+<div id="analyzingMessage">당신의 사주를 정밀 분석중..</div>
+
+<div id="fortuneResult"></div>
+<button id="retryBtn" style="display:none;">다시 보기</button>
+
+<script>
+  const nameInput = document.getElementById('nameInput');
+  const birthInput = document.getElementById('birthInput');
+  const hourInput = document.getElementById('hourInput');
+  const formArea = document.getElementById('formArea');
+  const fortuneBtn = document.getElementById('fortuneBtn');
+  const errorMessage = document.getElementById('errorMessage');
+  const analyzingMessage = document.getElementById('analyzingMessage');
+  const fortuneResult = document.getElementById('fortuneResult');
+  const retryBtn = document.getElementById('retryBtn');
+  const heading = document.querySelector('h1');
+  const subtitle = document.querySelector('.subtitle');
+  const starsContainer = document.getElementById('stars');
+
+  for (let i = 0; i < 120; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2 + 1;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.animationDelay = (Math.random() * 3) + 's';
+    starsContainer.appendChild(star);
+  }
+
+  const fortunes = {
+    총운: [
+      '오늘은 새로운 기회가 찾아오는 날입니다. 주변을 잘 살펴보세요.',
+      '차분하게 하루를 보내면 좋은 결과가 따라옵니다.',
+      '예상치 못한 행운이 문 앞에 서 있습니다.',
+      '작은 실수에 주의하면 무난하게 넘어가는 하루입니다.',
+      '그동안의 노력이 빛을 발하는 시기입니다.',
+      '주변 사람의 도움으로 어려움이 쉽게 풀립니다.',
+      '직감을 믿고 행동하면 좋은 선택을 하게 됩니다.',
+      '여유를 갖고 임하면 뜻밖의 성과를 얻습니다.'
+    ],
+    애정운: [
+      '솔직한 마음 표현이 관계를 더욱 돈독하게 만듭니다.',
+      '오래된 인연에서 좋은 소식이 들려올 수 있습니다.',
+      '작은 오해가 생길 수 있으니 대화로 풀어보세요.',
+      '새로운 만남의 기운이 강하게 느껴지는 하루입니다.',
+      '상대방의 마음을 헤아리는 배려가 빛을 발합니다.',
+      '그동안 망설였던 고백을 하기에 좋은 타이밍입니다.',
+      '혼자만의 시간도 소중히 여겨보세요.',
+      '다정한 말 한마디가 큰 감동을 줍니다.'
+    ],
+    재물운: [
+      '예상치 못한 수입이 생길 수 있는 날입니다.',
+      '충동적인 지출은 피하는 것이 좋습니다.',
+      '투자보다는 저축에 집중하면 안정을 찾습니다.',
+      '작은 절약이 모여 큰 자산이 되는 시기입니다.',
+      '금전 거래 시 계약 내용을 꼼꼼히 확인하세요.',
+      '지인과의 금전 거래는 신중하게 결정하세요.',
+      '재물운이 상승세를 타는 좋은 흐름입니다.',
+      '계획적인 소비가 좋은 결과로 이어집니다.'
+    ],
+    건강운: [
+      '충분한 수면이 컨디션을 좌우하는 하루입니다.',
+      '가벼운 운동으로 활력을 되찾아보세요.',
+      '과로는 금물, 적당한 휴식이 필요합니다.',
+      '소화기 건강에 신경 쓰면 좋은 하루입니다.',
+      '스트레칭으로 몸의 긴장을 풀어주세요.',
+      '물을 충분히 마시면 컨디션이 좋아집니다.',
+      '무리한 일정은 피하고 여유를 가지세요.',
+      '마음의 안정이 곧 건강의 비결입니다.'
+    ]
+  };
+
+  const luckyColors = ['보라색', '하늘색', '금색', '초록색', '분홍색', '파란색', '흰색', '빨간색'];
+  const luckyItems = ['손수건', '만년필', '동전', '머그컵', '향초', '우산', '손목시계', '반지'];
+
+  function hashStr(str) {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function pick(arr, seedBase, tag) {
+    const seed = hashStr(seedBase + '|' + tag);
+    return arr[seed % arr.length];
+  }
+
+  function buildResultCards(seedBase) {
+    fortuneResult.innerHTML = '';
+
+    const items = [
+      { label: '총운', value: pick(fortunes.총운, seedBase, '총운') },
+      { label: '애정운', value: pick(fortunes.애정운, seedBase, '애정운') },
+      { label: '재물운', value: pick(fortunes.재물운, seedBase, '재물운') },
+      { label: '건강운', value: pick(fortunes.건강운, seedBase, '건강운') }
+    ];
+
+    items.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'fortuneCard';
+      card.innerHTML = '<div class="label">' + item.label + '</div><div class="value">' + item.value + '</div>';
+      fortuneResult.appendChild(card);
+      setTimeout(() => card.classList.add('show'), i * 300);
+    });
+
+    const luckyNumber = (hashStr(seedBase + '|숫자') % 45) + 1;
+    const luckyColor = pick(luckyColors, seedBase, '색');
+    const luckyItem = pick(luckyItems, seedBase, '아이템');
+
+    const luckyRow = document.createElement('div');
+    luckyRow.className = 'luckyRow';
+    luckyRow.innerHTML =
+      '<div class="fortuneCard"><div class="label">행운의 숫자</div><div class="value">' + luckyNumber + '</div></div>' +
+      '<div class="fortuneCard"><div class="label">행운의 색</div><div class="value">' + luckyColor + '</div></div>' +
+      '<div class="fortuneCard"><div class="label">행운의 아이템</div><div class="value">' + luckyItem + '</div></div>';
+    fortuneResult.appendChild(luckyRow);
+
+    Array.from(luckyRow.children).forEach((card, i) => {
+      setTimeout(() => card.classList.add('show'), (items.length + i) * 300);
+    });
+
+    retryBtn.style.display = 'inline-block';
+  }
+
+  fortuneBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const birth = birthInput.value;
+    const hour = hourInput.value;
+
+    if (!name || !birth) {
+      errorMessage.style.display = 'block';
+      return;
+    }
+    errorMessage.style.display = 'none';
+
+    const today = new Date().toISOString().slice(0, 10);
+    const seedBase = name + '|' + birth + '|' + hour + '|' + today;
+
+    formArea.style.display = 'none';
+    heading.style.visibility = 'hidden';
+    subtitle.style.visibility = 'hidden';
+    analyzingMessage.style.display = 'flex';
+
+    setTimeout(() => {
+      analyzingMessage.style.display = 'none';
+      heading.style.visibility = 'visible';
+      subtitle.style.visibility = 'visible';
+      buildResultCards(seedBase);
+    }, 2000);
+  });
+
+  retryBtn.addEventListener('click', () => {
+    fortuneResult.innerHTML = '';
+    retryBtn.style.display = 'none';
+    formArea.style.display = 'flex';
+  });
+</script>
+</body>
+</html>
