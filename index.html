@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>상보의 로또번호 연구실</title>
 <style>
+  * {
+    box-sizing: border-box;
+  }
   html, body {
     height: 100%;
     margin: 0;
@@ -152,10 +155,11 @@
   @media (max-width: 480px) {
     h1 { font-size: 30px; }
     #lottoBtn { font-size: 22px; padding: 18px 34px; }
-    .ball { width: 52px; height: 52px; font-size: 22px; }
+    .lottoRow { gap: 8px; }
+    .ball { width: 38px; height: 38px; font-size: 15px; }
     #luckyMessage { font-size: 24px; }
     #fortuneLink { font-size: 15px; padding: 12px 20px; }
-    #analyzingMessage { font-size: 24px; }
+    #analyzingMessage { font-size: 22px; padding: 0 24px; }
   }
 </style>
 </head>
